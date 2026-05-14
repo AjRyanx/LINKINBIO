@@ -1,62 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { useActionState } from "react";
+import { signup } from "@/lib/actions/auth-actions";
 
 export function SignupForm() {
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
-    const form = new FormData(e.currentTarget);
-
-    try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.get("email"),
-          password: form.get("password"),
-          username: form.get("username"),
-          displayName: form.get("displayName"),
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error ?? "Something went wrong");
-        return;
-      }
-
-      const result = await signIn("credentials", {
-        email: form.get("email") as string,
-        password: form.get("password") as string,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError("Account created. Please log in.");
-        router.push("/auth/login");
-      } else {
-        router.push("/dashboard");
-        router.refresh();
-      }
-    } catch {
-      setError("Something went wrong. Try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const [error, formAction] = useActionState(signup, undefined);
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form action={formAction} className="space-y-4">
       {error && (
         <div className="p-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl animate-fade-in">
           {error}
@@ -123,10 +74,9 @@ export function SignupForm() {
 
       <button
         type="submit"
-        disabled={loading}
-        className="btn-accent w-full px-4 py-2.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+        className="btn-accent w-full px-4 py-2.5 rounded-xl"
       >
-        {loading ? "Creating account..." : "Create account"}
+        Create account
       </button>
     </form>
   );
