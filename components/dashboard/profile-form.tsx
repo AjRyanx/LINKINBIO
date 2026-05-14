@@ -9,7 +9,7 @@ type Profile = {
   avatarUrl: string | null;
 };
 
-const MAX_AVATAR_KB = 200;
+const MAX_AVATAR_KB = 1000;
 const MAX_AVATAR_PX = 400;
 
 export function ProfileForm({ profile }: { profile: Profile }) {
@@ -123,7 +123,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         {(uploadError) && (
           <p className="text-xs text-red-400">{uploadError}</p>
         )}
-        <p className="text-xs text-[var(--text-muted)]">Max {MAX_AVATAR_KB}KB · {MAX_AVATAR_PX}x{MAX_AVATAR_PX}px</p>
+        <p className="text-xs text-[var(--text-muted)]">Max 1MB · {MAX_AVATAR_PX}x{MAX_AVATAR_PX}px</p>
       </div>
 
       <div className="space-y-1.5">

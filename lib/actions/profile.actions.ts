@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 
-const MAX_DATA_URL_BYTES = 300_000;
+const MAX_DATA_URL_BYTES = 1_500_000;
 
 const profileSchema = z.object({
   displayName: z.string().min(1, "Display name is required").max(50),
