@@ -1,23 +1,86 @@
 "use client";
 
-import { useActionState } from "react";
-import { login } from "@/lib/actions/auth.actions";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
-  const [state, formAction] = useActionState(login, undefined);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const form = new FormData(e.currentTarget);
+
+    try {
+      const result = await signIn("credentials", {
+        email: form.get("email") as string,
+        password: form.get("password") as string,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        setError("Invalid email or password");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
+    } catch {
+      setError("Something went wrong. Try again.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
-    <form action={formAction} className="space-y-4">
-      {state?.error && (
-        <div className="p-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-lg">
-          {state.error}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div className="p-3 text-sm text-red-400 bg-red-400/10 border border-red-400/20 rounded-xl animate-fade-in">
+          {error}
         </div>
       )}
-      <Input label="Email" id="email" name="email" type="email" required autoComplete="email" />
-      <Input label="Password" id="password" name="password" type="password" required autoComplete="current-password" />
-      <Button type="submit">Log in</Button>
+
+      <div className="space-y-1.5">
+        <label htmlFor="email" className="block text-sm font-medium text-[var(--text-secondary)]">
+          Email
+        </label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          autoComplete="email"
+          className="input-field w-full px-4 py-2.5"
+          placeholder="you@example.com"
+        />
+      </div>
+
+      <div className="space-y-1.5">
+        <label htmlFor="password" className="block text-sm font-medium text-[var(--text-secondary)]">
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          className="input-field w-full px-4 py-2.5"
+          placeholder="••••••••"
+        />
+      </div>
+
+      <button
+        type="submit"
+        disabled={loading}
+        className="btn-accent w-full px-4 py-2.5 rounded-xl disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? "Signing in..." : "Log in"}
+      </button>
     </form>
   );
 }
