@@ -15,22 +15,28 @@ export function LoginForm() {
     setLoading(true);
 
     const form = new FormData(e.currentTarget);
+    const email = form.get("email") as string;
+    const password = form.get("password") as string;
 
     try {
       const result = await signIn("credentials", {
-        email: form.get("email") as string,
-        password: form.get("password") as string,
+        email,
+        password,
         redirect: false,
       });
 
       if (result?.error) {
-        setError("Invalid email or password");
-      } else {
+        setError(result.error === "CredentialsSignin"
+          ? "Invalid email or password"
+          : `Login failed: ${result.error}`);
+      } else if (result?.ok) {
         router.push("/dashboard");
         router.refresh();
+      } else {
+        setError("Unexpected response. Check server logs.");
       }
-    } catch {
-      setError("Something went wrong. Try again.");
+    } catch (err: any) {
+      setError(err?.message ?? "Network error. Check your connection.");
     } finally {
       setLoading(false);
     }
